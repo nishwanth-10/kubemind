@@ -1,8 +1,23 @@
 """
 KubeMind — Core Configuration (Production Edition)
 """
+import os
 from pydantic_settings import BaseSettings
 from typing import Optional, List
+
+
+def _find_env_file() -> str:
+    """Look for .env in CWD, then parent dir, then grandparent dir."""
+    candidates = [
+        os.path.join(os.getcwd(), ".env"),
+        os.path.join(os.getcwd(), "..", ".env"),
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", ".env"),
+    ]
+    for path in candidates:
+        normalized = os.path.normpath(os.path.abspath(path))
+        if os.path.isfile(normalized):
+            return normalized
+    return ".env"
 
 
 class Settings(BaseSettings):
@@ -71,7 +86,7 @@ class Settings(BaseSettings):
     ALERT_COOLDOWN_SECONDS: int = 300  # 5 min dedup window
 
     class Config:
-        env_file = ".env"
+        env_file = _find_env_file()
         env_file_encoding = "utf-8"
         case_sensitive = True
 

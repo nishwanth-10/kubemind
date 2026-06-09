@@ -1,5 +1,5 @@
 // KubeMind — REST API client (Production Edition)
-const BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
+const BASE = (process.env.NEXT_PUBLIC_API_URL || '').trim() || 'http://localhost:8000';
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null;

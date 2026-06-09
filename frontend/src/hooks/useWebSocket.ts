@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { WSPayload } from '@/types';
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? 'ws://localhost:8000/ws';
+const WS_URL = (process.env.NEXT_PUBLIC_WS_URL || '').trim() || 'ws://localhost:8000/ws';
 
 export function useKubeMindWS() {
   const [data, setData]       = useState<WSPayload | null>(null);

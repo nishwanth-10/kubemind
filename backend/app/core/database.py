@@ -63,19 +63,8 @@ _SCHEMA_SQL = """
 -- Timescale extension (optional — skipped if not available)
 -- CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 
--- Reset: drop all tables to handle schema migrations cleanly
-DROP TABLE IF EXISTS refresh_tokens CASCADE;
-DROP TABLE IF EXISTS api_keys CASCADE;
-DROP TABLE IF EXISTS clusters CASCADE;
-DROP TABLE IF EXISTS ai_insights CASCADE;
-DROP TABLE IF EXISTS prediction_history CASCADE;
-DROP TABLE IF EXISTS anomaly_records CASCADE;
-DROP TABLE IF EXISTS metrics_history CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
-DROP TABLE IF EXISTS organizations CASCADE;
-
 -- ── Multi-Tenancy Core ────────────────────────────────────────────────────────
-CREATE TABLE organizations (
+CREATE TABLE IF NOT EXISTS organizations (
     id          TEXT PRIMARY KEY,
     name        TEXT NOT NULL,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -528,3 +517,29 @@ async def get_metrics_history(service: str, org_id: str, cluster_id: str, hours:
             {"service": service, "org_id": org_id, "cluster_id": cluster_id, "hours": hours},
         )
         return [dict(row._mapping) for row in result]
+
+
+async def save_alert_record(org_id: str, cluster_id: str, service: str, alert_type: str, severity: str, message: str = "") -> None:
+    async with AsyncSessionLocal() as session:
+        await session.execute(
+            text("""
+                INSERT INTO alert_records (org_id, cluster_id, service, alert_type, severity, message)
+                VALUES (:org_id, :cluster_id, :service, :alert_type, :severity, :message)
+            """),
+            {"org_id": org_id, "cluster_id": cluster_id, "service": service,
+             "alert_type": alert_type, "severity": severity, "message": message},
+        )
+        await session.commit()
+
+
+async def save_topology_snapshot(topology_json: dict, org_id: str, cluster_id: str) -> None:
+    import json
+    async with AsyncSessionLocal() as session:
+        await session.execute(
+            text("""
+                INSERT INTO dependency_snapshots (org_id, cluster_id, topology_json)
+                VALUES (:org_id, :cluster_id, :topology_json)
+            """),
+            {"org_id": org_id, "cluster_id": cluster_id, "topology_json": json.dumps(topology_json)},
+        )
+        await session.commit()

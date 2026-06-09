@@ -662,11 +662,39 @@ def get_cluster_summary(metrics: Optional[List[Dict]] = None) -> Dict[str, Any]:
 
 
 def build_live_topology(metrics: Optional[List[Dict]] = None) -> Dict[str, Any]:
-    _init_k8s()
-    deployments = _collect_deployments()
-    services    = _collect_services()
-    pods        = _collect_pods()
-    return _build_topology(deployments, services, pods)
+    try:
+        _init_k8s()
+        deployments = _collect_deployments()
+        services    = _collect_services()
+        pods        = _collect_pods()
+        if deployments:
+            return _build_topology(deployments, services, pods)
+    except Exception as e:
+        logger.warning(f"K8s topology failed, building from agent data: {e}")
+
+    if not metrics:
+        logger.warning("build_live_topology: no metrics provided")
+        return {"nodes": [], "links": []}
+    logger.info(f"build_live_topology: building from {len(metrics)} metrics")
+    nodes = []
+    links = []
+    ns_map = {}
+    for m in metrics:
+        svc = m.get("service", "unknown")
+        ns = m.get("namespace", "default")
+        if ns not in ns_map:
+            ns_map[ns] = []
+        ns_map[ns].append(svc)
+        nodes.append({
+            "id": svc, "namespace": ns, "domain": ns,
+            "replicas": m.get("replicas", 1),
+            "ready_replicas": m.get("ready_replicas", 1),
+            "type": "deployment",
+        })
+    for ns, svcs in ns_map.items():
+        for i in range(1, len(svcs)):
+            links.append({"source": svcs[0], "target": svcs[i]})
+    return {"nodes": nodes, "links": links}
 
 
 # ── Real Kubernetes Chaos / Fault Injection ────────────────────────────────

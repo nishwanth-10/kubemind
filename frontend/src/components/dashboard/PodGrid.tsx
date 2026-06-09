@@ -82,7 +82,7 @@ export default function PodGrid({ metrics, onSelect, selected }: Props) {
               <div className="flex items-center gap-2 min-w-0">
                 <div className={`w-1.5 h-6 rounded-full flex-shrink-0 ${accentColor}`} />
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-slate-200 truncate">{m.service}</p>
+                  <p className="text-xs font-bold text-slate-200 truncate">{m.display_name ?? m.service}</p>
                   <p className="text-[9px] text-slate-500 font-mono">{m.namespace}</p>
                 </div>
               </div>

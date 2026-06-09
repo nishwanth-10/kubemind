@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubemind-agent
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubemind-agent
+  namespace: kubemind-agent
+type: Opaque
+stringData:
+  api-key: km_5fpMQ-_5z0oJ_IVQtOq3i7fT5yYfBaZKaCTrQdZ12hs
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubemind-agent
+  namespace: kubemind-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubemind-agent-reader
+rules:
+  - apiGroups: [""]
+    resources: ["pods", "services", "nodes", "events", "namespaces", "persistentvolumeclaims"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets", "statefulsets", "daemonsets"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubemind-agent-reader-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubemind-agent-reader
+subjects:
+  - kind: ServiceAccount
+    name: kubemind-agent
+    namespace: kubemind-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubemind-agent
+  namespace: kubemind-agent
+  labels:
+    app: kubemind-agent
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kubemind-agent
+  template:
+    metadata:
+      labels:
+        app: kubemind-agent
+    spec:
+      serviceAccountName: kubemind-agent
+      containers:
+        - name: agent
+          image: docker.io/nish0410/kubemind-agent:latest
+          imagePullPolicy: Always
+          env:
+            - name: KUBEMIND_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: kubemind-agent
+                  key: api-key
+            - name: KUBEMIND_BACKEND_URL
+              value: "wss://debrief-resubmit-eastcoast.ngrok-free.dev/ws/agent"
+            - name: KUBEMIND_CLUSTER_ID
+              value: "38768bfc-fab"
+            - name: KUBEMIND_INTERVAL
+              value: "5"
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi

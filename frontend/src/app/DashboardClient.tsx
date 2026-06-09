@@ -93,10 +93,10 @@ export default function Dashboard() {
 
   if (authLoading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-[#020817]">
+      <div className="h-screen w-screen flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 border-2 border-sky-500/30 border-t-sky-400 rounded-full animate-spin" />
-          <p className="text-sm text-slate-500">Loading KubeMind...</p>
+          <div className="w-8 h-8 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          <p className="text-sm text-neutral-500">Loading KubeMind...</p>
         </div>
       </div>
     );
@@ -177,7 +177,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="h-screen w-screen overflow-hidden bg-[#020817] flex">
+    <div className="h-screen w-screen overflow-hidden bg-black flex">
       {/* ─── Sidebar ─── */}
       <motion.nav
         initial={{ width: 0, opacity: 0 }}
@@ -187,8 +187,8 @@ export default function Dashboard() {
       >
         {/* Logo */}
         <div className="mb-6 mt-1">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-sky-500/20">
-            <Hexagon className="w-4 h-4 text-white" />
+          <div className="w-9 h-9 rounded-xl bg-white flex items-center justify-center shadow-lg shadow-white/10">
+            <Hexagon className="w-4 h-4 text-black" />
           </div>
         </div>
 
@@ -199,15 +199,15 @@ export default function Dashboard() {
             onClick={() => setActiveTab(item.id)}
             className={`relative w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-200 group ${
               activeTab === item.id
-                ? 'bg-sky-500/15 text-sky-400 shadow-sm'
-                : 'text-slate-600 hover:text-slate-300 hover:bg-white/[0.04]'
+                ? 'bg-white/15 text-white shadow-sm'
+                : 'text-neutral-600 hover:text-neutral-300 hover:bg-white/[0.04]'
             }`}
           >
             <item.icon className="w-4.5 h-4.5" />
             {activeTab === item.id && (
-              <motion.div layoutId="nav-indicator" className="absolute -left-3 w-1 h-5 rounded-full bg-sky-400" />
+              <motion.div layoutId="nav-indicator" className="absolute -left-3 w-1 h-5 rounded-full bg-white" />
             )}
-            <div className="absolute left-full ml-3 px-2 py-1 bg-slate-900 border border-slate-800 rounded-lg text-[9px] font-bold text-slate-300 whitespace-nowrap opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50">
+            <div className="absolute left-full ml-3 px-2 py-1 bg-neutral-900 border border-neutral-800 rounded-lg text-[9px] font-bold text-neutral-300 whitespace-nowrap opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 pointer-events-none z-50">
               {item.label}
             </div>
           </button>
@@ -264,7 +264,7 @@ export default function Dashboard() {
           <ClusterHeader summary={summary} wsStatus={status} lastTs={lastTs} />
 
           {/* Live Stats Strip */}
-          <div className="hidden xl:flex items-center gap-2 ml-auto">
+          <div className="flex items-center gap-2 ml-auto">
             <LiveStatCard
               label="CPU" icon={<Cpu className="w-3.5 h-3.5 text-emerald-400" />}
               value={`${summary?.avg_cpu_percent ?? 0}%`}
@@ -437,13 +437,13 @@ export default function Dashboard() {
                           const barColor = pct > 70 ? 'from-rose-500 to-rose-600' : pct > 40 ? 'from-amber-500 to-amber-600' : 'from-sky-500 to-sky-600';
                           return (
                             <motion.div
-                              key={m.service}
+                                key={m.service}
                               initial={{ opacity: 0, x: -6 }}
                               animate={{ opacity: 1, x: 0 }}
                               className="bg-black/40 border border-white/[0.06] rounded-lg p-2.5 hover:border-white/[0.10] transition-colors"
                             >
                               <div className="flex justify-between items-center mb-1.5">
-                                <span className="text-[9px] font-bold text-slate-300 truncate max-w-[160px]">{m.service}</span>
+                                <span className="text-[9px] font-bold text-slate-300 truncate max-w-[160px]">{m.display_name ?? m.service}</span>
                                 <span className={`text-[7px] font-bold uppercase px-1.5 py-0.5 rounded border ${
                                   p.risk_level === 'critical' ? 'text-rose-400 border-rose-500/30 bg-rose-500/10'
                                   : p.risk_level === 'high' ? 'text-amber-400 border-amber-500/30 bg-amber-500/10'

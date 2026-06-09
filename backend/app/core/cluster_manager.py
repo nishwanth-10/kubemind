@@ -16,10 +16,11 @@ logger = logging.getLogger("kubemind.cluster_manager")
 class ClusterConnection:
     """Represents a single cluster's K8s API connection."""
 
-    def __init__(self, cluster_id: str, name: str, provider: str = "unknown"):
+    def __init__(self, cluster_id: str, name: str, provider: str = "unknown", org_id: str = None):
         self.cluster_id = cluster_id
         self.name = name
         self.provider = provider  # minikube, eks, aks, gke, k3s, etc.
+        self.org_id = org_id
         self.core_v1: Optional[client.CoreV1Api] = None
         self.apps_v1: Optional[client.AppsV1Api] = None
         self.custom: Optional[client.CustomObjectsApi] = None
@@ -71,6 +72,7 @@ class ClusterConnection:
             "cluster_id": self.cluster_id,
             "name": self.name,
             "provider": self.provider,
+            "org_id": self.org_id,
             "connected": self.connected,
             "agent_connected": self.agent_connected,
             "agent_version": self.agent_version,
@@ -106,12 +108,13 @@ class ClusterManager:
         return conn
 
     def register_agent_cluster(
-        self, cluster_id: str, name: str, provider: str = "agent"
+        self, cluster_id: str, name: str, provider: str = "agent", org_id: str = None
     ) -> ClusterConnection:
         """Register a cluster that will be fed by an agent (no direct K8s API)."""
         conn = ClusterConnection(cluster_id, name, provider)
         conn.agent_connected = True
         conn.last_heartbeat = time.time()
+        conn.org_id = org_id
         self._clusters[cluster_id] = conn
         if not self._default_id:
             self._default_id = cluster_id

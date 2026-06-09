@@ -15,10 +15,12 @@ services:
       - .env
     environment:
       - ENVIRONMENT=development
+      - UPSTASH_REDIS_REST_URL=${UPSTASH_REDIS_REST_URL}
+      - UPSTASH_REDIS_REST_TOKEN=${UPSTASH_REDIS_REST_TOKEN}
       - ML_SERVICE_URL=http://ml-services:8001
       - AI_SERVICE_URL=http://ai-engine:8002
-      - DB_ENABLED=true
-      - DATABASE_URL=postgresql+asyncpg://neondb_owner:npg_ngBeTp9Y2xuf@ep-tiny-mode-apjw5bq8-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require
+      - DB_ENABLED=${DB_ENABLED:-true}
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://kubemind:kubemind@postgres:5432/kubemind}
       - REDIS_URL=redis://redis:6379/0
       - OLLAMA_HOST=http://ollama:11434
       - PROMETHEUS_URL=http://prometheus:9090
@@ -81,6 +83,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_WS_URL: ws://localhost:8000/ws
     ports:
       - "3000:3000"
     environment:
